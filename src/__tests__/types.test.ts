@@ -15,6 +15,26 @@ describe('Types', () => {
       const mismatches = await schema.compareSchemas();
       expect(mismatches.addedTypes).not.toHaveLength(0);
     });
+    describe('should find no new types if not present', () => {
+      it('Type', async () => {
+        const schemaOne = `type User {
+          id: Int
+        }`;
+        const schemaTwo = schemaOne;
+        const schema = new Schema(schemaOne, schemaTwo);
+        const mismatches = await schema.compareSchemas();
+        expect(mismatches.addedTypes).toHaveLength(0);
+      });
+      it('Input', async () => {
+        const schemaOne = `input User {
+          id: Int
+        }`;
+        const schemaTwo = schemaOne;
+        const schema = new Schema(schemaOne, schemaTwo);
+        const mismatches = await schema.compareSchemas();
+        expect(mismatches.addedTypes).toHaveLength(0);
+      });
+    });
   });
   describe('removedTypes', () => {
     it('should find removed types', async () => {

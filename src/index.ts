@@ -94,8 +94,8 @@ export default class Schema {
           if (
             isObjectDefinition(def) ||
             isInterfaceDefinition(def) ||
-            isInputObject(def) ||
             isOperation(def) ||
+            isInputObject(def) ||
             isScalarDefinition(def)
           ) {
             return def.name?.value === type.name?.value;
@@ -128,7 +128,7 @@ export default class Schema {
             isObjectDefinition(def) ||
             isInterfaceDefinition(def) ||
             isOperation(def) ||
-            isOperation(def) ||
+            isInputObject(def) ||
             isScalarDefinition(def)
           ) {
             return def.name?.value === type.name?.value;
