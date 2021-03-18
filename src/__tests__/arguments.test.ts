@@ -13,6 +13,28 @@ describe('Arguments', () => {
       const mismatches = await schema.compareSchemas();
       expect(mismatches.addedArguments).not.toHaveLength(0);
     });
+    it('should find new arguments in extended Query fields', async () => {
+      const schemaOne = `extend type Query {
+        unix: Int
+      }`;
+      const schemaTwo = `extend type Query {
+        unix(milliseconds: Boolean = false): Int
+      }`;
+      const schema = new Schema(schemaOne, schemaTwo);
+      const mismatches = await schema.compareSchemas();
+      expect(mismatches.addedArguments).not.toHaveLength(0);
+    });
+    it('should find new arguments in extended object fields', async () => {
+      const schemaOne = `extend type Time {
+        unix: Int
+      }`;
+      const schemaTwo = `extend type Time {
+        unix(milliseconds: Boolean = false): Int
+      }`;
+      const schema = new Schema(schemaOne, schemaTwo);
+      const mismatches = await schema.compareSchemas();
+      expect(mismatches.addedArguments).not.toHaveLength(0);
+    });
   });
   describe('removedArguments', () => {
     it('should find removed arguments', async () => {
@@ -20,6 +42,28 @@ describe('Arguments', () => {
         unix(milliseconds: Boolean = false): Int
       }`;
       const schemaTwo = `type Query {
+        unix: Int
+      }`;
+      const schema = new Schema(schemaOne, schemaTwo);
+      const mismatches = await schema.compareSchemas();
+      expect(mismatches.removedArguments).not.toHaveLength(0);
+    });
+    it('should find removed arguments in extended Query fields', async () => {
+      const schemaOne = `extend type Query {
+        unix(milliseconds: Boolean = false): Int
+      }`;
+      const schemaTwo = `extend type Query {
+        unix: Int
+      }`;
+      const schema = new Schema(schemaOne, schemaTwo);
+      const mismatches = await schema.compareSchemas();
+      expect(mismatches.removedArguments).not.toHaveLength(0);
+    });
+    it('should find removed arguments in extended object fields', async () => {
+      const schemaOne = `extend type Time {
+        unix(milliseconds: Boolean = false): Int
+      }`;
+      const schemaTwo = `extend type Time {
         unix: Int
       }`;
       const schema = new Schema(schemaOne, schemaTwo);

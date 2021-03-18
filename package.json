@@ -1,6 +1,6 @@
 {
   "name": "@beforeyoubid/graphql-schema-diff",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Diff GraphQL schemas to find differences between schema versions",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
