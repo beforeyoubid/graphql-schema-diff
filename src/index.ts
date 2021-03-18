@@ -170,7 +170,7 @@ export default class Schema {
           this.mismatches.fieldsMadeNullable.push({ field, type: objectType });
         }
       } else {
-        if (isArgument && notEmpty(argumentField) && isInputValueDefinition(field) && isInputValueDefinition(field2)) {
+        if (isInputValueDefinition(field) && isInputValueDefinition(field2) && isArgument && notEmpty(argumentField)) {
           this.mismatches.argumentTypesChanged.push({
             field: argumentField,
             type: objectType,
