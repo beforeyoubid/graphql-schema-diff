@@ -10,6 +10,7 @@ import {
   isInterfaceDefinition,
   isNamedObjectType,
   isObjectDefinition,
+  isObjectExtension,
   isOperation,
   isScalarDefinition,
   notEmpty,
@@ -88,7 +89,8 @@ export default class Schema {
         isInterfaceDefinition(type) ||
         isOperation(type) ||
         isInputObject(type) ||
-        isScalarDefinition(type)
+        isScalarDefinition(type) ||
+        isObjectExtension(type)
       ) {
         const matchingType = this.types2.definitions.find(def => {
           if (
@@ -96,7 +98,8 @@ export default class Schema {
             isInterfaceDefinition(def) ||
             isOperation(def) ||
             isInputObject(def) ||
-            isScalarDefinition(def)
+            isScalarDefinition(def) ||
+            isObjectExtension(def)
           ) {
             return def.name?.value === type.name?.value;
           }
@@ -121,7 +124,8 @@ export default class Schema {
         isInterfaceDefinition(type) ||
         isOperation(type) ||
         isInputObject(type) ||
-        isScalarDefinition(type)
+        isScalarDefinition(type) ||
+        isObjectExtension(type)
       ) {
         const matchingType = this.types.definitions.find(def => {
           if (
@@ -129,7 +133,8 @@ export default class Schema {
             isInterfaceDefinition(def) ||
             isOperation(def) ||
             isInputObject(def) ||
-            isScalarDefinition(def)
+            isScalarDefinition(def) ||
+            isObjectExtension(def)
           ) {
             return def.name?.value === type.name?.value;
           }
