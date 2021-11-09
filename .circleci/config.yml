@@ -33,6 +33,8 @@ jobs:
           command: yarn test --reporters=jest-junit
           environment:
             JEST_JUNIT_OUTPUT_DIR: ./reports/jest/
+      - store_artifacts:
+          path: coverage
       - store_test_results:
           path: ./reports/jest/
       - save_cache:
