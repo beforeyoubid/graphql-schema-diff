@@ -23,7 +23,7 @@ export default class Schema {
   types: DocumentNode;
   types2: DocumentNode;
   config: Required<Config>;
-  private mismatches: Mismatches = DEFAULT_MISMATCHES;
+  private mismatches: Mismatches = DEFAULT_MISMATCHES();
 
   constructor(schema1: DocumentNode | string, schema2: DocumentNode | string, userConfig?: Config) {
     this.types = typeof schema1 === 'string' ? parse(schema1) : schema1;
@@ -31,7 +31,7 @@ export default class Schema {
     this.config = combineConfig(userConfig ?? {});
   }
   private instantiateMismatches() {
-    this.mismatches = DEFAULT_MISMATCHES;
+    this.mismatches = DEFAULT_MISMATCHES();
   }
 
   findOtherType(type: MatchingDef, side: 'first' | 'second'): Maybe<MatchingDef> {

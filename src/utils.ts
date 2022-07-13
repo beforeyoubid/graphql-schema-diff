@@ -4,7 +4,7 @@ export const DEFAULT_CONFIG: Required<Config> = {
   showDeprecatedAlongsideRegularRemovals: false,
 };
 
-export const DEFAULT_MISMATCHES: Mismatches = {
+export const DEFAULT_MISMATCHES = (): Mismatches => ({
   addedTypes: [],
   // addedOperations: [],
   addedFields: [],
@@ -31,7 +31,7 @@ export const DEFAULT_MISMATCHES: Mismatches = {
   typesChanged: [],
   // operationFieldsMadeNotNull: [],
   // operationFieldsMadeNullable: [],
-};
+});
 
 export function combineConfig(config: Partial<Config>): Required<Config> {
   return {
