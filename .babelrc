@@ -4,6 +4,7 @@
       "@babel/preset-env",
       {
         "useBuiltIns": "entry",
+        "corejs": "3.8",
         "targets": {
           "node": "current"
         }
@@ -11,8 +12,5 @@
     ],
     "@babel/preset-typescript"
   ],
-  "plugins": [
-    "add-module-exports",
-    "@babel/plugin-proposal-class-properties"
- ]
+  "plugins": ["add-module-exports", "@babel/plugin-proposal-class-properties"]
 }
