@@ -26,6 +26,12 @@ jobs:
       - checkout
       - restore_cache:
           key: node_modules-{{ checksum "yarn.lock" }}
+      - run:
+          name: Setup Code Climate test-reporter
+          command: |
+          # download test reporter as a static binary
+            curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+            chmod +x ./cc-test-reporter
       - run: NODE_ENV=development yarn
       - run: mkdir -p ./reports/jest/ ; true
       - run:
@@ -37,6 +43,9 @@ jobs:
           path: coverage
       - store_test_results:
           path: ./reports/jest/
+      - run:
+          name: Upload to CodeClimate
+          command: ./cc-test-reporter upload-coverage coverage/clover.xml
       - save_cache:
           key: node_modules-{{ checksum "yarn.lock" }}
           paths:
