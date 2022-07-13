@@ -117,7 +117,15 @@ export default class Schema {
           if (isScalarDefinition(type)) {
             this.mismatches.removedScalars.push(type);
           } else {
-            this.mismatches.removedTypes.push(type);
+            const wasDeprecated = (type.directives ?? []).some(directive => directive.name.value === 'deprecated');
+            if (wasDeprecated) {
+              this.mismatches.removedDeprecatedTypes.push(type);
+              if (this.config.showDeprecatedAlongsideRegularRemovals) {
+                this.mismatches.removedTypes.push(type);
+              }
+            } else {
+              this.mismatches.removedTypes.push(type);
+            }
           }
         }
 

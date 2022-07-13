@@ -50,6 +50,49 @@ describe('Types', () => {
       const mismatches = await schema.compareSchemas();
       expect(mismatches.removedTypes).not.toHaveLength(0);
     });
+    describe('config.showDeprecatedAlongsideRegularRemovals', () => {
+      it('true - should find removed type w/ deprecated directive', async () => {
+        const schemaTwo = `type User {
+        id: Int
+      }`;
+        const schemaOne = `${schemaTwo}
+      type Company @deprecated {
+        id: Int
+      }
+      `;
+        const schema = new Schema(schemaOne, schemaTwo, { showDeprecatedAlongsideRegularRemovals: true });
+        const mismatches = await schema.compareSchemas();
+        expect(mismatches.removedTypes).not.toHaveLength(0);
+      });
+      it('false - should not find removed type w/ deprecated directive', async () => {
+        const schemaTwo = `type User {
+        id: Int
+      }`;
+        const schemaOne = `${schemaTwo}
+      type Company @deprecated {
+        id: Int
+      }
+      `;
+        const schema = new Schema(schemaOne, schemaTwo, { showDeprecatedAlongsideRegularRemovals: false });
+        const mismatches = await schema.compareSchemas();
+        expect(mismatches.removedTypes).toHaveLength(0);
+      });
+    });
+  });
+  describe('removedDeprecatedTypes', () => {
+    it('should find removed deprecated types', async () => {
+      const schemaTwo = `type User {
+        id: Int
+      }`;
+      const schemaOne = `${schemaTwo}
+      type Company @deprecated {
+        id: Int
+      }
+      `;
+      const schema = new Schema(schemaOne, schemaTwo);
+      const mismatches = await schema.compareSchemas();
+      expect(mismatches.removedDeprecatedTypes).not.toHaveLength(0);
+    });
   });
   describe('typesChanged', () => {
     it('should find changed types', async () => {
