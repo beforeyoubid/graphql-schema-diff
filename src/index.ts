@@ -1,156 +1,108 @@
-import { FieldDefinitionNode, parse, InputValueDefinitionNode, DocumentNode } from 'graphql';
+import { FieldDefinitionNode, parse, InputValueDefinitionNode, DocumentNode, StringValueNode } from 'graphql';
 import {
+  Maybe,
   Field,
   NamedObjectType,
   isFieldDefinition,
-  isInputObject,
   isInputValueBasicObject,
   isInputValueDefinition,
   isInputValueNonNull,
-  isInterfaceDefinition,
   isNamedObjectType,
-  isObjectDefinition,
-  isObjectExtension,
-  isOperation,
   isScalarDefinition,
+  isMatchingType,
+  MatchingDef,
   notEmpty,
   Mismatches,
+  Config,
 } from './types';
+import { combineConfig, DEFAULT_MISMATCHES } from './utils';
 
 export * from './print';
 
 export default class Schema {
   types: DocumentNode;
   types2: DocumentNode;
-  private mismatches: Mismatches = {
-    addedTypes: [],
-    // addedOperations: [],
-    addedFields: [],
-    addedScalars: [],
+  config: Required<Config>;
+  private mismatches: Mismatches = DEFAULT_MISMATCHES();
 
-    removedTypes: [],
-    // removedOperations: [],
-    removedFields: [],
-    removedScalars: [],
-
-    fieldTypesChanged: [],
-    fieldsMadeNotNull: [],
-    fieldsMadeNullable: [],
-
-    addedArguments: [],
-    addedNotNullArguments: [],
-    removedArguments: [],
-    argumentTypesChanged: [],
-    argumentsMadeNotNull: [],
-    argumentsMadeNullable: [],
-
-    typesChanged: [],
-    // operationFieldsMadeNotNull: [],
-    // operationFieldsMadeNullable: [],
-  };
-
-  constructor(schema1: DocumentNode | string, schema2: DocumentNode | string) {
+  constructor(schema1: DocumentNode | string, schema2: DocumentNode | string, userConfig?: Config) {
     this.types = typeof schema1 === 'string' ? parse(schema1) : schema1;
     this.types2 = typeof schema2 === 'string' ? parse(schema2) : schema2;
+    this.config = combineConfig(userConfig ?? {});
   }
   private instantiateMismatches() {
-    this.mismatches = {
-      addedTypes: [],
-      // addedOperations: [],
-      addedFields: [],
-      addedScalars: [],
-
-      removedTypes: [],
-      // removedOperations: [],
-      removedFields: [],
-      removedScalars: [],
-
-      fieldTypesChanged: [],
-      fieldsMadeNotNull: [],
-      fieldsMadeNullable: [],
-
-      addedArguments: [],
-      addedNotNullArguments: [],
-      removedArguments: [],
-      argumentTypesChanged: [],
-      argumentsMadeNotNull: [],
-      argumentsMadeNullable: [],
-
-      typesChanged: [],
-      // operationFieldsMadeNotNull: [],
-      // operationFieldsMadeNullable: [],
-    };
+    this.mismatches = DEFAULT_MISMATCHES();
   }
-  async compareSchemas(): Promise<Mismatches> {
-    this.instantiateMismatches();
-    for (const type of this.types.definitions) {
-      if (
-        isObjectDefinition(type) ||
-        isInterfaceDefinition(type) ||
-        isOperation(type) ||
-        isInputObject(type) ||
-        isScalarDefinition(type) ||
-        isObjectExtension(type)
-      ) {
-        const matchingType = this.types2.definitions.find(def => {
-          if (
-            isObjectDefinition(def) ||
-            isInterfaceDefinition(def) ||
-            isOperation(def) ||
-            isInputObject(def) ||
-            isScalarDefinition(def) ||
-            isObjectExtension(def)
-          ) {
-            return def.name?.value === type.name?.value;
-          }
-        });
 
-        if (!matchingType && isNamedObjectType(type)) {
-          if (isScalarDefinition(type)) {
-            this.mismatches.removedScalars.push(type);
-          } else {
+  findOtherType(type: MatchingDef, side: 'first' | 'second'): Maybe<MatchingDef> {
+    const matchFunction = (def: MatchingDef) => {
+      return def.name?.value === type.name?.value;
+    };
+    if (side === 'first') return this.types2.definitions.filter(isMatchingType).find(matchFunction);
+    if (side === 'second') return this.types.definitions.filter(isMatchingType).find(matchFunction);
+  }
+
+  async iterateFirstTypes(): Promise<void> {
+    const matchingDefinitions = this.types.definitions.filter(isMatchingType);
+    for (const type of matchingDefinitions) {
+      const matchingType = this.findOtherType(type, 'first');
+
+      if (!matchingType && isNamedObjectType(type)) {
+        if (isScalarDefinition(type)) {
+          this.mismatches.removedScalars.push(type);
+        } else {
+          const wasDeprecated = (type.directives ?? []).some(directive => directive.name.value === 'deprecated');
+          if (wasDeprecated) {
+            this.mismatches.removedDeprecatedTypes.push(type);
+          }
+          if (wasDeprecated && this.config.showDeprecatedAlongsideRegularRemovals) {
+            this.mismatches.removedTypes.push(type);
+          }
+          if (!wasDeprecated) {
             this.mismatches.removedTypes.push(type);
           }
         }
+      }
 
-        if (matchingType && isNamedObjectType(matchingType) && isNamedObjectType(type)) {
-          await this.compareTypes(type, matchingType);
-        }
+      if (matchingType && isNamedObjectType(matchingType) && isNamedObjectType(type)) {
+        await this.compareTypes(type, matchingType);
       }
     }
-    for (const type of this.types2.definitions) {
-      if (
-        isObjectDefinition(type) ||
-        isInterfaceDefinition(type) ||
-        isOperation(type) ||
-        isInputObject(type) ||
-        isScalarDefinition(type) ||
-        isObjectExtension(type)
-      ) {
-        const matchingType = this.types.definitions.find(def => {
-          if (
-            isObjectDefinition(def) ||
-            isInterfaceDefinition(def) ||
-            isOperation(def) ||
-            isInputObject(def) ||
-            isScalarDefinition(def) ||
-            isObjectExtension(def)
-          ) {
-            return def.name?.value === type.name?.value;
-          }
-        });
+  }
 
-        if (!matchingType && isNamedObjectType(type)) {
-          if (isScalarDefinition(type)) {
-            this.mismatches.addedScalars.push(type);
-          } else {
-            this.mismatches.addedTypes.push(type);
-          }
+  async iterateSecondTypes(): Promise<void> {
+    const matchingDefinitions = this.types2.definitions.filter(isMatchingType);
+    for (const type of matchingDefinitions) {
+      if (!isNamedObjectType(type)) continue;
+      const matchingType = this.findOtherType(type, 'second');
+      if (matchingType) {
+        const deprecatedDirective = type.directives?.find(d => d.name.value === 'deprecated');
+        const wasDeprecated = deprecatedDirective && !matchingType.directives?.some(d => d.name.value === 'deprecated');
+        if (wasDeprecated) {
+          this.mismatches.typesMadeDeprecated.push({
+            type,
+            reason: (deprecatedDirective.arguments?.find(arg => arg.name.value === 'reason')?.value as StringValueNode)
+              .value,
+          });
         }
+        continue;
+      }
+
+      if (isScalarDefinition(type)) {
+        this.mismatches.addedScalars.push(type);
+      } else {
+        this.mismatches.addedTypes.push(type);
       }
     }
+  }
+
+  async compareSchemas(): Promise<Mismatches> {
+    this.instantiateMismatches();
+    await this.iterateFirstTypes();
+    await this.iterateSecondTypes();
     return this.mismatches;
   }
+
   async compareFieldTypes(
     type: InputValueDefinitionNode['type'],
     type2: InputValueDefinitionNode['type'],
@@ -275,7 +227,15 @@ export default class Schema {
       const fields: readonly Field[] = type2.fields ?? [];
       const matchingField = fields.find(newField => newField.name.value == field.name.value);
       if (!matchingField) {
-        this.mismatches.removedFields.push({ field, type: type2 });
+        const wasDeprecated = (field.directives ?? []).some(directive => directive.name.value === 'deprecated');
+        if (wasDeprecated) {
+          this.mismatches.removedDeprecatedFields.push({ field, type: type2 });
+          if (this.config.showDeprecatedAlongsideRegularRemovals) {
+            this.mismatches.removedFields.push({ field, type: type2 });
+          }
+        } else {
+          this.mismatches.removedFields.push({ field, type: type2 });
+        }
         continue;
       }
 
