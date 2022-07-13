@@ -13,6 +13,7 @@ import {
   isObjectExtension,
   isOperation,
   isScalarDefinition,
+  isMatchingType,
   notEmpty,
   Mismatches,
   Config,
@@ -92,23 +93,9 @@ export default class Schema {
   async compareSchemas(): Promise<Mismatches> {
     this.instantiateMismatches();
     for (const type of this.types.definitions) {
-      if (
-        isObjectDefinition(type) ||
-        isInterfaceDefinition(type) ||
-        isOperation(type) ||
-        isInputObject(type) ||
-        isScalarDefinition(type) ||
-        isObjectExtension(type)
-      ) {
+      if (isMatchingType(type)) {
         const matchingType = this.types2.definitions.find(def => {
-          if (
-            isObjectDefinition(def) ||
-            isInterfaceDefinition(def) ||
-            isOperation(def) ||
-            isInputObject(def) ||
-            isScalarDefinition(def) ||
-            isObjectExtension(def)
-          ) {
+          if (isMatchingType(def)) {
             return def.name?.value === type.name?.value;
           }
         });
