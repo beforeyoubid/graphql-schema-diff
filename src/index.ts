@@ -15,7 +15,7 @@ import {
   Mismatches,
   Config,
 } from './types';
-import { combineConfig } from './utils';
+import { combineConfig, defaultMismatches, DEFAULT_MISMATCHES } from './utils';
 
 export * from './print';
 
@@ -23,34 +23,7 @@ export default class Schema {
   types: DocumentNode;
   types2: DocumentNode;
   config: Required<Config>;
-  private mismatches: Mismatches = {
-    addedTypes: [],
-    // addedOperations: [],
-    addedFields: [],
-    addedScalars: [],
-
-    removedTypes: [],
-    removedDeprecatedTypes: [],
-    // removedOperations: [],
-    removedFields: [],
-    removedDeprecatedFields: [],
-    removedScalars: [],
-
-    fieldTypesChanged: [],
-    fieldsMadeNotNull: [],
-    fieldsMadeNullable: [],
-
-    addedArguments: [],
-    addedNotNullArguments: [],
-    removedArguments: [],
-    argumentTypesChanged: [],
-    argumentsMadeNotNull: [],
-    argumentsMadeNullable: [],
-
-    typesChanged: [],
-    // operationFieldsMadeNotNull: [],
-    // operationFieldsMadeNullable: [],
-  };
+  private mismatches: Mismatches = DEFAULT_MISMATCHES;
 
   constructor(schema1: DocumentNode | string, schema2: DocumentNode | string, userConfig?: Config) {
     this.types = typeof schema1 === 'string' ? parse(schema1) : schema1;
@@ -58,34 +31,7 @@ export default class Schema {
     this.config = combineConfig(userConfig ?? {});
   }
   private instantiateMismatches() {
-    this.mismatches = {
-      addedTypes: [],
-      // addedOperations: [],
-      addedFields: [],
-      addedScalars: [],
-
-      removedTypes: [],
-      removedDeprecatedTypes: [],
-      // removedOperations: [],
-      removedFields: [],
-      removedDeprecatedFields: [],
-      removedScalars: [],
-
-      fieldTypesChanged: [],
-      fieldsMadeNotNull: [],
-      fieldsMadeNullable: [],
-
-      addedArguments: [],
-      addedNotNullArguments: [],
-      removedArguments: [],
-      argumentTypesChanged: [],
-      argumentsMadeNotNull: [],
-      argumentsMadeNullable: [],
-
-      typesChanged: [],
-      // operationFieldsMadeNotNull: [],
-      // operationFieldsMadeNullable: [],
-    };
+    this.mismatches = DEFAULT_MISMATCHES;
   }
 
   findOtherType(type: MatchingDef, side: 'first' | 'second'): Maybe<MatchingDef> {
