@@ -52,6 +52,82 @@ describe('Fields', () => {
       const mismatches = await schema.compareSchemas();
       expect(mismatches.removedFields).not.toHaveLength(0);
     });
+    describe('config.showDeprecatedAlongsideRegularRemovals', () => {
+      it('true - should find removed field w/ deprecated directive', async () => {
+        const schemaOne = `type User {
+          id: Int
+          email: String @deprecated
+        }`;
+        const schemaTwo = `type User {
+          id: Int
+        }`;
+        const schema = new Schema(schemaOne, schemaTwo, { showDeprecatedAlongsideRegularRemovals: true });
+        const mismatches = await schema.compareSchemas();
+        expect(mismatches.removedFields).not.toHaveLength(0);
+      });
+      it('true - should find removed extended field w/ deprecated directive', async () => {
+        const schemaOne = `extend type User {
+        id: Int
+        email: String @deprecated
+      }`;
+        const schemaTwo = `extend type User {
+        id: Int
+      }`;
+        const schema = new Schema(schemaOne, schemaTwo, { showDeprecatedAlongsideRegularRemovals: true });
+        const mismatches = await schema.compareSchemas();
+        expect(mismatches.removedFields).not.toHaveLength(0);
+      });
+      it('false - should not find removed field w/ deprecated directive', async () => {
+        const schemaOne = `type User {
+          id: Int
+          email: String @deprecated
+        }`;
+        const schemaTwo = `type User {
+          id: Int
+        }`;
+        const schema = new Schema(schemaOne, schemaTwo, { showDeprecatedAlongsideRegularRemovals: false });
+        const mismatches = await schema.compareSchemas();
+        expect(mismatches.removedFields).toHaveLength(0);
+      });
+      it('false - should not find removed extended field w/ deprecated directive', async () => {
+        const schemaOne = `extend type User {
+        id: Int
+        email: String @deprecated
+      }`;
+        const schemaTwo = `extend type User {
+        id: Int
+      }`;
+        const schema = new Schema(schemaOne, schemaTwo, { showDeprecatedAlongsideRegularRemovals: false });
+        const mismatches = await schema.compareSchemas();
+        expect(mismatches.removedFields).toHaveLength(0);
+      });
+    });
+  });
+  describe('removedDeprecatedFields', () => {
+    it('should find removed field', async () => {
+      const schemaOne = `type User {
+        id: Int
+        email: String @deprecated
+      }`;
+      const schemaTwo = `type User {
+        id: Int
+      }`;
+      const schema = new Schema(schemaOne, schemaTwo);
+      const mismatches = await schema.compareSchemas();
+      expect(mismatches.removedDeprecatedFields).not.toHaveLength(0);
+    });
+    it('should find removed field in extended type', async () => {
+      const schemaOne = `extend type User {
+        id: Int
+        email: String @deprecated
+      }`;
+      const schemaTwo = `extend type User {
+        id: Int
+      }`;
+      const schema = new Schema(schemaOne, schemaTwo);
+      const mismatches = await schema.compareSchemas();
+      expect(mismatches.removedDeprecatedFields).not.toHaveLength(0);
+    });
   });
   describe('fieldTypesChanged', () => {
     it('should find changed field types', async () => {
