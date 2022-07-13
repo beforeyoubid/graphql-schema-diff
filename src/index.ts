@@ -1,19 +1,16 @@
-import { FieldDefinitionNode, parse, InputValueDefinitionNode, DocumentNode } from 'graphql';
+import { FieldDefinitionNode, parse, InputValueDefinitionNode, DocumentNode, DefinitionNode } from 'graphql';
 import {
+  Maybe,
   Field,
   NamedObjectType,
   isFieldDefinition,
-  isInputObject,
   isInputValueBasicObject,
   isInputValueDefinition,
   isInputValueNonNull,
-  isInterfaceDefinition,
   isNamedObjectType,
-  isObjectDefinition,
-  isObjectExtension,
-  isOperation,
   isScalarDefinition,
   isMatchingType,
+  MatchingDef,
   notEmpty,
   Mismatches,
   Config,
@@ -90,71 +87,66 @@ export default class Schema {
       // operationFieldsMadeNullable: [],
     };
   }
+
+  findOtherType(type: MatchingDef, side: 'first' | 'second'): Maybe<MatchingDef> {
+    const matchFunction = (def: MatchingDef) => {
+      return def.name?.value === type.name?.value;
+    };
+    if (side === 'first') return this.types2.definitions.filter(isMatchingType).find(matchFunction);
+    if (side === 'second') return this.types.definitions.filter(isMatchingType).find(matchFunction);
+  }
+
+  async iterateFirstTypes(): Promise<void> {
+    const matchingDefinitions = this.types.definitions.filter(isMatchingType);
+    for (const type of matchingDefinitions) {
+      const matchingType = this.findOtherType(type, 'first');
+
+      if (!matchingType && isNamedObjectType(type)) {
+        if (isScalarDefinition(type)) {
+          this.mismatches.removedScalars.push(type);
+        } else {
+          const wasDeprecated = (type.directives ?? []).some(directive => directive.name.value === 'deprecated');
+          if (wasDeprecated) {
+            this.mismatches.removedDeprecatedTypes.push(type);
+          }
+          if (wasDeprecated && this.config.showDeprecatedAlongsideRegularRemovals) {
+            this.mismatches.removedTypes.push(type);
+          }
+          if (!wasDeprecated) {
+            this.mismatches.removedTypes.push(type);
+          }
+        }
+      }
+
+      if (matchingType && isNamedObjectType(matchingType) && isNamedObjectType(type)) {
+        await this.compareTypes(type, matchingType);
+      }
+    }
+  }
+
+  async iterateSecondTypes(): Promise<void> {
+    const matchingDefinitions = this.types2.definitions.filter(isMatchingType);
+    for (const type of matchingDefinitions) {
+      const matchingType = this.findOtherType(type, 'second');
+      if (matchingType) continue;
+
+      if (!isNamedObjectType(type)) continue;
+
+      if (isScalarDefinition(type)) {
+        this.mismatches.addedScalars.push(type);
+      } else {
+        this.mismatches.addedTypes.push(type);
+      }
+    }
+  }
+
   async compareSchemas(): Promise<Mismatches> {
     this.instantiateMismatches();
-    for (const type of this.types.definitions) {
-      if (isMatchingType(type)) {
-        const matchingType = this.types2.definitions.find(def => {
-          if (isMatchingType(def)) {
-            return def.name?.value === type.name?.value;
-          }
-        });
-
-        if (!matchingType && isNamedObjectType(type)) {
-          if (isScalarDefinition(type)) {
-            this.mismatches.removedScalars.push(type);
-          } else {
-            const wasDeprecated = (type.directives ?? []).some(directive => directive.name.value === 'deprecated');
-            if (wasDeprecated) {
-              this.mismatches.removedDeprecatedTypes.push(type);
-            }
-            if (wasDeprecated && this.config.showDeprecatedAlongsideRegularRemovals) {
-              this.mismatches.removedTypes.push(type);
-            }
-            if (!wasDeprecated) {
-              this.mismatches.removedTypes.push(type);
-            }
-          }
-        }
-
-        if (matchingType && isNamedObjectType(matchingType) && isNamedObjectType(type)) {
-          await this.compareTypes(type, matchingType);
-        }
-      }
-    }
-    for (const type of this.types2.definitions) {
-      if (
-        isObjectDefinition(type) ||
-        isInterfaceDefinition(type) ||
-        isOperation(type) ||
-        isInputObject(type) ||
-        isScalarDefinition(type) ||
-        isObjectExtension(type)
-      ) {
-        const matchingType = this.types.definitions.find(def => {
-          if (
-            isObjectDefinition(def) ||
-            isInterfaceDefinition(def) ||
-            isOperation(def) ||
-            isInputObject(def) ||
-            isScalarDefinition(def) ||
-            isObjectExtension(def)
-          ) {
-            return def.name?.value === type.name?.value;
-          }
-        });
-
-        if (!matchingType && isNamedObjectType(type)) {
-          if (isScalarDefinition(type)) {
-            this.mismatches.addedScalars.push(type);
-          } else {
-            this.mismatches.addedTypes.push(type);
-          }
-        }
-      }
-    }
+    await this.iterateFirstTypes();
+    await this.iterateSecondTypes();
     return this.mismatches;
   }
+
   async compareFieldTypes(
     type: InputValueDefinitionNode['type'],
     type2: InputValueDefinitionNode['type'],
