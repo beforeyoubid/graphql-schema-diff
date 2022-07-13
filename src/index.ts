@@ -1,4 +1,4 @@
-import { FieldDefinitionNode, parse, InputValueDefinitionNode, DocumentNode } from 'graphql';
+import { FieldDefinitionNode, parse, InputValueDefinitionNode, DocumentNode, StringValueNode } from 'graphql';
 import {
   Maybe,
   Field,
@@ -73,10 +73,20 @@ export default class Schema {
   async iterateSecondTypes(): Promise<void> {
     const matchingDefinitions = this.types2.definitions.filter(isMatchingType);
     for (const type of matchingDefinitions) {
-      const matchingType = this.findOtherType(type, 'second');
-      if (matchingType) continue;
-
       if (!isNamedObjectType(type)) continue;
+      const matchingType = this.findOtherType(type, 'second');
+      if (matchingType) {
+        const deprecatedDirective = type.directives?.find(d => d.name.value === 'deprecated');
+        const wasDeprecated = deprecatedDirective && !matchingType.directives?.some(d => d.name.value === 'deprecated');
+        if (wasDeprecated) {
+          this.mismatches.typesMadeDeprecated.push({
+            type,
+            reason: (deprecatedDirective.arguments?.find(arg => arg.name.value === 'reason')?.value as StringValueNode)
+              .value,
+          });
+        }
+        continue;
+      }
 
       if (isScalarDefinition(type)) {
         this.mismatches.addedScalars.push(type);

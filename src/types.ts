@@ -91,6 +91,7 @@ export type Mismatches = {
   argumentsMadeNotNull: Argument[];
   argumentsMadeNullable: Argument[];
   typesChanged: MismatchedTypeChange[];
+  typesMadeDeprecated: { type: NamedObjectType; reason?: string }[];
 };
 
 export type Config = {

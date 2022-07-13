@@ -29,6 +29,7 @@ export const DEFAULT_MISMATCHES = (): Mismatches => ({
   argumentsMadeNullable: [],
 
   typesChanged: [],
+  typesMadeDeprecated: [],
   // operationFieldsMadeNotNull: [],
   // operationFieldsMadeNullable: [],
 });
