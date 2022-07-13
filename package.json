@@ -22,7 +22,7 @@
     "build:js": "babel src/*.ts --out-dir dist --extensions \".ts,.tsx\" --source-maps inline"
   },
   "dependencies": {
-    "chalk": "5.0.1",
+    "chalk": "^4.1.0",
     "graphql": "^15.5.0"
   },
   "devDependencies": {
