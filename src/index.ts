@@ -1,4 +1,4 @@
-import { FieldDefinitionNode, parse, InputValueDefinitionNode, DocumentNode, DefinitionNode } from 'graphql';
+import { FieldDefinitionNode, parse, InputValueDefinitionNode, DocumentNode } from 'graphql';
 import {
   Maybe,
   Field,
@@ -15,7 +15,7 @@ import {
   Mismatches,
   Config,
 } from './types';
-import { combineConfig, defaultMismatches, DEFAULT_MISMATCHES } from './utils';
+import { combineConfig, DEFAULT_MISMATCHES } from './utils';
 
 export * from './print';
 
