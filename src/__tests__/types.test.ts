@@ -108,4 +108,31 @@ describe('Types', () => {
       expect(mismatches.typesChanged).not.toHaveLength(0);
     });
   });
+  describe('typesMadeDeprecated', () => {
+    it('should find new deprecated types', async () => {
+      const schemaOne = `type User {
+        id: Int
+      }`;
+      const schemaTwo = `type User @deprecated {
+        id: Int
+      }
+      `;
+      const schema = new Schema(schemaOne, schemaTwo);
+      const mismatches = await schema.compareSchemas();
+      expect(mismatches.typesMadeDeprecated).not.toHaveLength(0);
+    });
+    it('should find new deprecated types w/ reason', async () => {
+      const schemaOne = `type User {
+        id: Int
+      }`;
+      const schemaTwo = `type User @deprecated(reason: "no more users!") {
+        id: Int
+      }
+      `;
+      const schema = new Schema(schemaOne, schemaTwo);
+      const mismatches = await schema.compareSchemas();
+      expect(mismatches.typesMadeDeprecated).not.toHaveLength(0);
+      expect(mismatches.typesMadeDeprecated[0].reason).not.toBeUndefined();
+    });
+  });
 });
