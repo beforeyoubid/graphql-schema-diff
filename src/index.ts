@@ -291,7 +291,15 @@ export default class Schema {
       const fields: readonly Field[] = type2.fields ?? [];
       const matchingField = fields.find(newField => newField.name.value == field.name.value);
       if (!matchingField) {
-        this.mismatches.removedFields.push({ field, type: type2 });
+        const wasDeprecated = (field.directives ?? []).some(directive => directive.name.value === 'deprecated');
+        if (wasDeprecated) {
+          this.mismatches.removedDeprecatedFields.push({ field, type: type2 });
+          if (this.config.showDeprecatedAlongsideRegularRemovals) {
+            this.mismatches.removedFields.push({ field, type: type2 });
+          }
+        } else {
+          this.mismatches.removedFields.push({ field, type: type2 });
+        }
         continue;
       }
 
