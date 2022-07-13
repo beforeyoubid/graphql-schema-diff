@@ -55,9 +55,11 @@ export type Mismatches = {
   addedScalars: ScalarTypeDefinitionNode[];
   removedScalars: ScalarTypeDefinitionNode[];
   removedTypes: NamedObjectType[];
+  removedDeprecatedTypes: NamedObjectType[];
 
   addedFields: MismatchedField[];
   removedFields: MismatchedField[];
+  removedDeprecatedFields: MismatchedField[];
 
   fieldsMadeNotNull: MismatchedField[];
   fieldsMadeNullable: MismatchedField[];
