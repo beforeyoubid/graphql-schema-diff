@@ -43,6 +43,25 @@ export const isInputValueList = (value: Maybe<InputValueDefinitionNode['type']>)
 export const isScalarDefinition = (value: Maybe<DefinitionNode>): value is ScalarTypeDefinitionNode =>
   notEmpty(value) && value.kind === 'ScalarTypeDefinition';
 
+export type MatchingDef =
+  | ObjectTypeDefinitionNode
+  | InterfaceTypeDefinitionNode
+  | OperationDefinitionNode
+  | InputObjectTypeDefinitionNode
+  | ScalarTypeDefinitionNode
+  | ObjectTypeExtensionNode;
+
+export function isMatchingType(def: DefinitionNode): def is MatchingDef {
+  return (
+    isObjectDefinition(def) ||
+    isInterfaceDefinition(def) ||
+    isOperation(def) ||
+    isInputObject(def) ||
+    isScalarDefinition(def) ||
+    isObjectExtension(def)
+  );
+}
+
 export type Argument = { argument: InputValueDefinitionNode; field: FieldDefinitionNode; type: NamedObjectType };
 export type MismatchedField = { field: Field; type: NamedObjectType };
 export type MismatchedFieldWithArguments = MismatchedField & { to: Field };
@@ -55,9 +74,11 @@ export type Mismatches = {
   addedScalars: ScalarTypeDefinitionNode[];
   removedScalars: ScalarTypeDefinitionNode[];
   removedTypes: NamedObjectType[];
+  removedDeprecatedTypes: NamedObjectType[];
 
   addedFields: MismatchedField[];
   removedFields: MismatchedField[];
+  removedDeprecatedFields: MismatchedField[];
 
   fieldsMadeNotNull: MismatchedField[];
   fieldsMadeNullable: MismatchedField[];
@@ -70,4 +91,14 @@ export type Mismatches = {
   argumentsMadeNotNull: Argument[];
   argumentsMadeNullable: Argument[];
   typesChanged: MismatchedTypeChange[];
+  typesMadeDeprecated: { type: NamedObjectType; reason?: string }[];
+};
+
+export type Config = {
+  /**
+   * This argument controls whether fields/types that are removed show inside the `removedFields`/`removedTypes` or not.
+   *
+   * Default to `false`
+   */
+  showDeprecatedAlongsideRegularRemovals?: boolean;
 };
