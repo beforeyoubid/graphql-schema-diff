@@ -73,3 +73,12 @@ export type Mismatches = {
   argumentsMadeNullable: Argument[];
   typesChanged: MismatchedTypeChange[];
 };
+
+export type Config = {
+  /**
+   * This argument controls whether fields/types that are removed show inside the `removedFields`/`removedTypes` or not.
+   *
+   * Default to `false`
+   */
+  showDeprecatedAlongsideRegularRemovals?: boolean;
+};
