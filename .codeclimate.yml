@@ -1,8 +1,8 @@
-version: "2"
+version: '2'
 checks:
   file-lines:
-      config:
-        threshold: 500
+    config:
+      threshold: 500
   method-complexity:
     config:
       threshold: 50
@@ -10,12 +10,12 @@ checks:
     config:
       threshold: 100
   return-statements:
-      enabled: true
-      config:
-        threshold: 10
+    enabled: true
+    config:
+      threshold: 10
 plugins:
   eslint:
     enabled: true
-    channel: "eslint-4"
+    channel: 'eslint-7'
     config:
       config: .eslintrc
