@@ -43,15 +43,15 @@ export const isInputValueList = (value: Maybe<InputValueDefinitionNode['type']>)
 export const isScalarDefinition = (value: Maybe<DefinitionNode>): value is ScalarTypeDefinitionNode =>
   notEmpty(value) && value.kind === 'ScalarTypeDefinition';
 
-export function isMatchingType(
-  def: DefinitionNode
-): def is
+export type MatchingDef =
   | ObjectTypeDefinitionNode
   | InterfaceTypeDefinitionNode
   | OperationDefinitionNode
   | InputObjectTypeDefinitionNode
   | ScalarTypeDefinitionNode
-  | ObjectTypeExtensionNode {
+  | ObjectTypeExtensionNode;
+
+export function isMatchingType(def: DefinitionNode): def is MatchingDef {
   return (
     isObjectDefinition(def) ||
     isInterfaceDefinition(def) ||
