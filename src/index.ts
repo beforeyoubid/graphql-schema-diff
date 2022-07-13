@@ -29,8 +29,10 @@ export default class Schema {
     addedScalars: [],
 
     removedTypes: [],
+    removedDeprecatedTypes: [],
     // removedOperations: [],
     removedFields: [],
+    removedDeprecatedFields: [],
     removedScalars: [],
 
     fieldTypesChanged: [],
@@ -61,8 +63,10 @@ export default class Schema {
       addedScalars: [],
 
       removedTypes: [],
+      removedDeprecatedTypes: [],
       // removedOperations: [],
       removedFields: [],
+      removedDeprecatedFields: [],
       removedScalars: [],
 
       fieldTypesChanged: [],
