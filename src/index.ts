@@ -15,13 +15,16 @@ import {
   isScalarDefinition,
   notEmpty,
   Mismatches,
+  Config,
 } from './types';
+import { combineConfig } from './utils';
 
 export * from './print';
 
 export default class Schema {
   types: DocumentNode;
   types2: DocumentNode;
+  config: Required<Config>;
   private mismatches: Mismatches = {
     addedTypes: [],
     // addedOperations: [],
@@ -51,9 +54,10 @@ export default class Schema {
     // operationFieldsMadeNullable: [],
   };
 
-  constructor(schema1: DocumentNode | string, schema2: DocumentNode | string) {
+  constructor(schema1: DocumentNode | string, schema2: DocumentNode | string, userConfig?: Config) {
     this.types = typeof schema1 === 'string' ? parse(schema1) : schema1;
     this.types2 = typeof schema2 === 'string' ? parse(schema2) : schema2;
+    this.config = combineConfig(userConfig ?? {});
   }
   private instantiateMismatches() {
     this.mismatches = {
