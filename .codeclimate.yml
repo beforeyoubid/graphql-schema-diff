@@ -14,7 +14,7 @@ checks:
     config:
       threshold: 10
 exclude_patterns:
-  - '**/__tests/'
+  - '**/__tests__/'
 plugins:
   nodesecurity:
     enabled: true
