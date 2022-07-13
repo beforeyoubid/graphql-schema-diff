@@ -14,6 +14,8 @@ checks:
     config:
       threshold: 10
 plugins:
+  nodesecurity:
+    enabled: true
   eslint:
     enabled: true
     channel: 'eslint-7'
