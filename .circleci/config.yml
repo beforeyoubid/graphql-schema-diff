@@ -34,6 +34,9 @@ jobs:
       - run: NODE_ENV=development yarn
       - run: mkdir -p ./reports/jest/ ; true
       - run:
+          name: Let CodeClimate know there's a build coming
+          command: ./cc-test-reporter before-build
+      - run:
           name: Tests
           command: yarn test --reporters=jest-junit --reporters=default
           environment:
@@ -44,7 +47,9 @@ jobs:
           path: ./reports/jest/
       - run:
           name: Upload to CodeClimate
-          command: ./cc-test-reporter upload-coverage coverage/clover.xml
+          command: |
+            ./cc-test-reporter before-build
+            ./cc-test-reporter after-build --coverage-input-type clover --exit-code $? coverage/clover.xmly
       - save_cache:
           key: node_modules-{{ checksum "yarn.lock" }}
           paths:
