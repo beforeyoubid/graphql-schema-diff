@@ -13,6 +13,8 @@ checks:
     enabled: true
     config:
       threshold: 10
+exclude_paths:
+  - '**/__tests/'
 plugins:
   nodesecurity:
     enabled: true
