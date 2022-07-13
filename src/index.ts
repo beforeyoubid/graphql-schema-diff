@@ -120,10 +120,11 @@ export default class Schema {
             const wasDeprecated = (type.directives ?? []).some(directive => directive.name.value === 'deprecated');
             if (wasDeprecated) {
               this.mismatches.removedDeprecatedTypes.push(type);
-              if (this.config.showDeprecatedAlongsideRegularRemovals) {
-                this.mismatches.removedTypes.push(type);
-              }
-            } else {
+            }
+            if (wasDeprecated && this.config.showDeprecatedAlongsideRegularRemovals) {
+              this.mismatches.removedTypes.push(type);
+            }
+            if (!wasDeprecated) {
               this.mismatches.removedTypes.push(type);
             }
           }
