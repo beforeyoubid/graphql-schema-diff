@@ -82,8 +82,21 @@ jobs:
       - restore_cache:
           key: node_modules-{{ checksum "yarn.lock" }}
       - run: NODE_ENV=development yarn
-      - run: yarn build
-      - run: npm publish --dry-run
+      - run: yarn build-and-publish-dryrun
+      - run: npm i -g verdaccio
+      - run:
+          name: Wait for Verdaccio to start
+          command: |
+            cd module_test
+            verdaccio --config verdaccio_config.yaml
+          background: true
+      - run: npm build-and-publish-dryrun-ci
+      - run:
+          name: Test module install
+          command: |
+            cd module_test
+            yarn install --registry http://localhost:4873
+            yarn test
       - save_cache:
           key: node_modules-{{ checksum "yarn.lock" }}
           paths:
