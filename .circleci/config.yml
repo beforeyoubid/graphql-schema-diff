@@ -90,7 +90,7 @@ jobs:
             cd module_test
             verdaccio --config verdaccio_config.yaml
           background: true
-      - run: npm build-and-publish-dryrun-ci
+      - run: npm run build-and-publish-dryrun-ci
       - run:
           name: Test module install
           command: |
