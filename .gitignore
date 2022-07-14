@@ -107,3 +107,6 @@ dist
 junit.xml
 
 cc-test-reporter
+
+module_test/storage
+module_test/yarn.lock
